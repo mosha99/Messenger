@@ -49,7 +49,7 @@
         {
             _me = new SenderUser(Guid.NewGuid(), Name, "");
 
-            SignalRProvider.Build("http://localhost:2020/chathub");
+            SignalRProvider.Build("http://localhost:2020/chathub/");
 
             SignalRProvider.On<UserMessage>(Configuration.ReceiveMethodName, ReceiveMessage);
 
