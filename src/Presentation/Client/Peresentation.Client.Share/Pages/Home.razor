@@ -50,7 +50,7 @@
         {
             _me = new SenderUser(Guid.NewGuid(), Name, "");
 
-            SignalRProvider.Build(NavigationManager.ToAbsoluteUri("chathub/").ToString());
+            SignalRProvider.Build(NavigationManager.ToAbsoluteUri("chathub/").ToString().Replace("8045", "8080"));
 
             SignalRProvider.On<UserMessage>(Configuration.ReceiveMethodName, ReceiveMessage);
 
