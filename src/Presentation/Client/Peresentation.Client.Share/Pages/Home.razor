@@ -42,7 +42,9 @@
     private SenderUser? _me;
 
     [Inject] public NavigationManager NavigationManager { set; get; }
+
     [Inject] public ISignalRProvider SignalRProvider { set; get; }
+
 
     private async Task Login()
     {
