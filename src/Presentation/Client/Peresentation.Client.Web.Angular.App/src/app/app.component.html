@@ -1,0 +1,24 @@
+<div class="chat-container">
+  <!-- فضای نمایش پیام‌ها -->
+  <div class="chat-area">
+    <div class="message-list">
+      <div *ngFor="let message of messages; let index = index" [ngClass]="{'message': true, 'mine': message!.from!.guid === me!.guid, 'theirs': message!.from!.guid !== me!.guid}">
+        <span class="from">{{ message!.from!.name }}</span>
+        <div class="content">{{ message!.message }}</div>
+        <span class="time">{{ message!.sendTime }}</span>
+      </div>
+    </div>
+
+    <!-- فرم ورود -->
+    <div *ngIf="!loggedIn" class="message-input">
+      <input type="text" [(ngModel)]="name" placeholder="نام خود را بنویسید..." />
+      <button [disabled]="name.length < 3" (click)="login()">شروع</button>
+    </div>
+
+    <!-- فرم ارسال پیام -->
+    <div *ngIf="loggedIn" class="message-input">
+      <input type="text" [(ngModel)]="newMessage" placeholder="پیام خود را بنویسید..." />
+      <button [disabled]="!newMessage.trim()" (click)="sendMessage()">ارسال</button>
+    </div>
+  </div>
+</div>

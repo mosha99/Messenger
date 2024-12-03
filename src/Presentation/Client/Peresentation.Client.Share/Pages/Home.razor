@@ -1,0 +1,96 @@
+﻿@page "/"
+@using global::Share.Model
+
+
+<div class="chat-container">
+    <!-- فضای نمایش پیام‌ها -->
+    <div class="chat-area">
+        <div class="message-list">
+            @foreach (var message in Messages)
+            {
+                <div class="message @(GetMessageSide(message))">
+                    <span class="from">@message.From.Name</span>
+                    <div class="content">@(message.Message)</div>
+                    <span class="time">@message.SendTime.ToString("HH:mm:ss")</span>
+                </div>
+            }
+        </div>
+        @if (_me is null)
+        {
+            <div class="message-input">
+                <input type="text" @bind="Name" @bind:event="oninput" placeholder="نام خود را بنویسید..." />
+                <button disabled="@(Name.Length < 3)" @onclick="Login">شروع</button>
+            </div>
+        }
+        else
+        {
+            <div class="message-input">
+                <input type="text" @bind="NewMessage" @bind:event="oninput" placeholder="پیام خود را بنویسید..." />
+                <button disabled="@(string.IsNullOrWhiteSpace(NewMessage))"@onclick="SendMessage">ارسال</button>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private string NewMessage = string.Empty;
+
+    private string Name = string.Empty;
+
+    private readonly List<UserMessage> Messages = [];
+
+    private SenderUser? _me;
+
+    [Inject] public NavigationManager NavigationManager { set; get; }
+
+    [Inject] public ISignalRProvider SignalRProvider { set; get; }
+
+
+    private async Task Login()
+    {
+        try
+        {
+            // build and initialize SignalR
+            _me = new SenderUser(Guid.NewGuid(), Name, "");
+
+            var url = NavigationManager.ToAbsoluteUri("chathub/");
+
+            SignalRProvider.Build(url.AbsolutePath);
+
+            SignalRProvider.On<UserMessage>(Configuration.ReceiveMethodName, ReceiveMessage);
+
+            await SignalRProvider.StartAsync();
+
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception e)
+        {
+            _me = null;
+            Console.WriteLine(e);
+        }
+    }
+
+    private async Task ReceiveMessage(UserMessage obj)
+    {
+        // Receive Message From Server With SignalR
+        Messages.Add(obj);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SendMessage()
+    {        
+        // Send Message With SignalR
+        var message = new UserMessage(_me, NewMessage, TimeOnly.FromDateTime(DateTime.Now));
+        await SignalRProvider.SendAsync(Configuration.SenderMethodName, message);
+        Messages.Add(message);
+        await InvokeAsync(StateHasChanged);
+    }
+
+
+    private string GetMessageSide(UserMessage message)
+    {
+        if (message.From.Equals(_me)) return "mine";
+        return "theirs";
+    }
+
+}
